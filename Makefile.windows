@@ -1,0 +1,46 @@
+# Makefile 1.1 (GNU Make 3.81; MacOSX gcc 4.2.1; MacOSX MinGW 4.3.0)
+
+PROJ  := ZombieApocalypse
+PROJw := $(PROJ).exe
+VA    := 0
+VB    := 1
+FILES := Open Map Vector Bitmap Camera Text Obj Widget Input Buffer
+SDIR  := src
+BDIR  := bin
+BACK  := backup
+ICON  := icon.ico
+EXTRA := Makefile.windows
+INST  := $(PROJ)-$(VA)_$(VB)
+OBJS  := $(patsubst %,$(BDIR)/%.o,$(FILES))
+SRCS  := $(patsubst %,$(SDIR)/%.c,$(FILES))
+H     := $(patsubst %,$(SDIR)/%.h,$(FILES))
+
+CCw  := /usr/local/i386-mingw32-4.3.0/bin/i386-mingw32-gcc
+CFw  := -Wall -O3 -fasm -fomit-frame-pointer -ffast-math -funroll-loops -pedantic -DGL -lglut32 -lglu32 -lopengl32 -mwindows
+OFw  := /usr/local/i386-mingw32-4.3.0/i386-mingw32/lib/libglut32.a /usr/local/i386-mingw32-4.3.0/i386-mingw32/lib/libglu32.a /usr/local/i386-mingw32-4.3.0/i386-mingw32/lib/libopengl32.a
+
+default: $(BDIR)/$(PROJw)
+	echo "FIXME: get icon"
+
+$(BDIR)/$(PROJw): $(OBJSw)
+	$(CCw) $(OFw) $(CFw) $^ -o $@
+
+$(BDIR)/%.o: $(SDIR)/%.c
+	@mkdir -p $(BDIR)
+	$(CCw) $(CFw) -c $? -o $@
+
+.PHONY: setup clean backup
+
+setup: default
+	@mkdir -p $(BDIR)/$(INST)
+	cp $(BDIR)/$(PROJ) readme.txt gpl.txt copying.txt $(BDIR)/$(INST)
+	rm -f $(BDIR)/$(INST)-Win32.zip
+	zip $(BDIR)/$(INST)-Win32.zip -r $(BDIR)/$(INST)
+	rm -R $(BDIR)/$(INST)
+
+clean:
+	-rm -f $(OBJS)
+
+backup:
+	@mkdir -p $(BACK)
+	zip $(BACK)/$(INST)-`date +%Y-%m-%dT%H%M%S`.zip readme.txt gpl.txt copying.txt Makefile $(SRCS) $(H) $(SDIR)/$(ICON) $(EXTRA)
